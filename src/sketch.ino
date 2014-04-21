@@ -53,12 +53,22 @@ class Pixel {
     }
 
 
-    void draw(Adafruit_PCD8544 display){
-      display.drawPixel(this->x, this->y, BLACK);
+    void draw(Adafruit_PCD8544 display, int color){
+      display.drawPixel(this->x, this->y, color);
+      display.drawPixel(this->x+1, this->y, color);
+      display.drawPixel(this->x, this->y+1, color);
+      display.drawPixel(this->x+1, this->y+1, color);
     }
 
+    void draw(Adafruit_PCD8544 display){
+      this->draw(display, BLACK);
+      this->draw(display, BLACK);
+    }
+
+
     void move(Adafruit_PCD8544 display, uint16_t x, uint16_t y){
-      display.drawPixel(this->x, this->y, WHITE);
+      //display.drawPixel(this->x, this->y, WHITE);
+      this->draw(display, WHITE);
       this->x = x;
       this->y = y;
       display.drawPixel(this->x, this->y, BLACK);
@@ -142,10 +152,6 @@ void setup()
 void loop()
 {
   
-  /*Serial.print("A0="); Serial.print(analogRead(A0)); Serial.print(" ");
-  Serial.print("A1="); Serial.print(analogRead(A1));Serial.print(" ");
-  Serial.print("A2="); Serial.println(analogRead(A2));*/
-
   uint16_t axis_x = analogRead(AXIS_X);
   uint16_t axis_y = analogRead(AXIS_Y);
   uint16_t button = analogRead(BUTTON);
@@ -170,8 +176,6 @@ void loop()
       p.move_up(display);
       p.draw(display);
     }
-
-
 
     display.display();
   }
