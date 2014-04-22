@@ -10,60 +10,6 @@ Adafruit_PCD8544 display = Adafruit_PCD8544(8, 7, 5, 4, 3);
 #define BUTTON A2
 
 
-class Pixel {
-
-  private:
-    uint16_t x, y;
-    Adafruit_PCD8544 *display;
-
-
-  public:
-    Pixel(Adafruit_PCD8544 *display,  uint16_t x, uint16_t y){
-     this->x = x;
-     this->y = y;
-     this->display = display;
-    }
-
-
-    void draw(int color){
-      this->display->drawPixel(this->x, this->y, color);
-      this->display->drawPixel(this->x+1, this->y, color);
-      this->display->drawPixel(this->x, this->y+1, color);
-      this->display->drawPixel(this->x+1, this->y+1, color);
-    }
-
-    void draw(){
-      this->draw(BLACK);
-      this->draw(BLACK);
-    }
-
-
-    void move(uint16_t x, uint16_t y){
-      //display.drawPixel(this->x, this->y, WHITE);
-      this->draw(WHITE);
-      this->x = x;
-      this->y = y;
-      this->display->drawPixel(this->x, this->y, BLACK);
-    }
-
-    void move_right(){
-      this->move(this->x+1, this->y);
-    }
-
-    void move_left(){
-      this->move(this->x-1, this->y);
-    }
-    
-    void move_up(){
-      this->move(this->x, this->y-1);
-    }
-
-    void move_down(){
-      this->move(this->x, this->y+1);
-    }
-
-};
-
 
 class TimedExecution {
 
@@ -99,6 +45,78 @@ class TimedExecution {
 
     void reset(){
       this->last_run = millis();
+    }
+
+};
+
+class Pixel {
+
+  private:
+    uint16_t x, y;
+    Adafruit_PCD8544 *display;
+
+
+  public:
+    Pixel(Adafruit_PCD8544 *display,  uint16_t x, uint16_t y){
+     this->x = x;
+     this->y = y;
+     this->display = display;
+    }
+
+
+    void draw(int color){
+      this->display->drawPixel(this->x, this->y, color);
+      this->display->drawPixel(this->x+1, this->y, color);
+      this->display->drawPixel(this->x, this->y+1, color);
+      this->display->drawPixel(this->x+1, this->y+1, color);
+    }
+
+    void draw(){
+      this->draw(BLACK);
+      this->draw(BLACK);
+    }
+
+
+    void move(uint16_t x, uint16_t y){
+      this->draw(WHITE);
+      this->x = x;
+      this->y = y;
+      this->display->drawPixel(this->x, this->y, BLACK);
+    }
+
+    void move_right(){
+      this->move(this->x+1, this->y);
+    }
+
+    void move_left(){
+      this->move(this->x-1, this->y);
+    }
+    
+    void move_up(){
+      this->move(this->x, this->y-1);
+    }
+
+    void move_down(){
+      this->move(this->x, this->y+1);
+    }
+
+};
+
+
+class Ball: public Pixel {
+
+  private:
+    uint16_t direction;
+
+  public:
+
+  Ball (TimedExecution *speed, Adafruit_PCD8544 *display, uint16_t x, uint16_t y):
+        Pixel(display, x, y){
+      this->direction = 0;
+    }
+
+    void move(){
+    
     }
 
 };
@@ -141,7 +159,9 @@ class Pad {
 
 
 TimedExecution speed = TimedExecution(100);
-Pixel ball = Pixel(&display, 30, 30);
+TimedExecution ball_speed = TimedExecution(50);
+
+Ball ball = Ball(&ball_speed, &display, (uint16_t) 30, (uint16_t) 30);
 Pad player1 = Pad(&display, 0, 10);
 
 void setup()
@@ -168,17 +188,6 @@ void loop()
   uint16_t button = analogRead(BUTTON);
 
   if (speed.expired()){
-    /*if (axis_x > 600){
-      p.move_right(display);
-      p.draw(display);
-    }
-
-    if (axis_x < 450){
-      p.move_left(display);
-      p.draw(display);
-    }
-    */
-
     if (axis_y > 600){
       player1.move_down();
       player1.draw();
@@ -188,6 +197,8 @@ void loop()
       player1.move_up();
       player1.draw();
     }
+
+
 
     display.display();
   }
