@@ -54,9 +54,9 @@ class TimedExecution {
 class Pad {
 
   public:
-    uint16_t x, y;
-    const static uint16_t size = 10;
-    const static uint16_t step = 2;
+    int x, y;
+    const static int size = 10;
+    const static int step = 2;
     Adafruit_PCD8544 *display;
 
   public:
@@ -66,15 +66,19 @@ class Pad {
       this->display = display;
     }
     void move_up(){
-      this->display->drawLine(this->x, this->y, this->x, this->y+this->size, WHITE);
-      this->y-=step;
-      this->draw();
+      if (this->y - this->step >= 0){
+        this->display->drawLine(this->x, this->y, this->x, this->y+this->size, WHITE);
+        this->y-=step;
+        this->draw();
+      }
     }
 
     void move_down(){
-      this->display->drawLine(this->x, this->y, this->x, this->y+this->size, WHITE);
-      this->y+=step;
-      this->draw();
+      if (this->y + this->step + this->size <= 48){
+        this->display->drawLine(this->x, this->y, this->x, this->y+this->size, WHITE);
+        this->y+=step;
+        this->draw();
+      }
     }
 
     void draw(int color){
@@ -193,7 +197,7 @@ class Ball: public Pixel {
 
 
 
-TimedExecution speed = TimedExecution(200);
+TimedExecution speed = TimedExecution(100);
 TimedExecution ball_speed = TimedExecution(50);
 
 Ball ball = Ball(&ball_speed, &display, (uint16_t) 30, (uint16_t) 30);
@@ -242,4 +246,5 @@ void loop()
     ball.reflect();
   }
 
+  display.display();
 }
