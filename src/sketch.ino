@@ -49,9 +49,47 @@ class TimedExecution {
 
 };
 
+
+
+class Pad {
+
+  public:
+    uint16_t x, y;
+    const static uint16_t size = 10;
+    const static uint16_t step = 2;
+    Adafruit_PCD8544 *display;
+
+  public:
+    Pad(Adafruit_PCD8544 *display, uint16_t x, uint16_t y){
+      this->x = x;
+      this->y = y;
+      this->display = display;
+    }
+    void move_up(){
+      this->display->drawLine(this->x, this->y, this->x, this->y+this->size, WHITE);
+      this->y-=step;
+      this->draw();
+    }
+
+    void move_down(){
+      this->display->drawLine(this->x, this->y, this->x, this->y+this->size, WHITE);
+      this->y+=step;
+      this->draw();
+    }
+
+    void draw(int color){
+      this->display->drawLine(this->x, this->y, this->x, this->y+this->size, color); 
+    }
+
+    void draw(){
+      this->draw(BLACK);
+    }
+
+};
+
 class Pixel {
 
-  private:
+  public:
     uint16_t x, y;
     Adafruit_PCD8544 *display;
 
@@ -138,43 +176,21 @@ class Ball: public Pixel {
         }
       }
     }
+
+    void reflect(){
+      this->direction_h = DIR_RIGHT;
+      this->direction_v = DIR_DOWN;
+    }
+
+    bool colides(Pad pad){
+      if ((this->x-1 == pad.x && this->direction_h == DIR_LEFT) && (this->y >= pad.y && this->y <= (pad.y + pad.size)) ){
+        return true;
+      }
+      return false;
+    }
 };
 
-class Pad {
 
-  private:
-    uint16_t x, y;
-    const static uint16_t size = 10;
-    const static uint16_t step = 2;
-    Adafruit_PCD8544 *display;
-
-  public:
-    Pad(Adafruit_PCD8544 *display, uint16_t x, uint16_t y){
-      this->x = x;
-      this->y = y;
-      this->display = display;
-    }
-    void move_up(){
-      this->display->drawLine(this->x, this->y, this->x, this->y+this->size, WHITE);
-      this->y-=step;
-      this->draw();
-    }
-
-    void move_down(){
-      this->display->drawLine(this->x, this->y, this->x, this->y+this->size, WHITE);
-      this->y+=step;
-      this->draw();
-    }
-
-    void draw(int color){
-      this->display->drawLine(this->x, this->y, this->x, this->y+this->size, color); 
-    }
-
-    void draw(){
-      this->draw(BLACK);
-    }
-
-};
 
 
 TimedExecution speed = TimedExecution(200);
@@ -220,5 +236,10 @@ void loop()
 
   ball.move();
   display.display();
+
+  if (ball.colides(player1)){
+    Serial.println("Colides!");
+    ball.reflect();
+  }
 
 }
