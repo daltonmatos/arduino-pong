@@ -178,12 +178,69 @@ class Ball: public Pixel {
         }else {
           this->move_right();
         }
+
+        /* Bottom Limit */
+        if (this->y+1 == 48 && this->direction_h == DIR_RIGHT && this->direction_v == DIR_DOWN){
+          this->direction_v = DIR_UP;
+          return;
+        }
+        
+        /* Bottom Limit */
+        if (this->y+1 == 48 && this->direction_h == DIR_LEFT && this->direction_v == DIR_DOWN){
+          this->direction_v = DIR_UP;
+          return;
+        }
+        
+        /* Left Limit */
+        if (this->y-1 == 0){ // && this->direction_h == DIR_RIGHT && this->direction_v == DIR_UP){
+          //Serial.println("Up Limit");
+          //this->direction_v = DIR_DOWN;
+          this->reflect_v();
+          return;
+        }
+
+        /* Right Limit */
+        if (this->x+1 == 84 && this->direction_h == DIR_RIGHT && this->direction_v == DIR_UP){
+          this->direction_h = DIR_LEFT;
+          return;
+        }
+        
+        if (this->x+1 == 84 && this->direction_h == DIR_RIGHT && this->direction_v == DIR_DOWN){
+          this->direction_h = DIR_LEFT;
+          return;
+        }
+
       }
     }
 
     void reflect(){
-      this->direction_h = DIR_RIGHT;
-      this->direction_v = DIR_DOWN;
+      if (this->direction_v == DIR_DOWN){
+        this->direction_v = DIR_UP;
+      }else {
+        this->direction_v = DIR_DOWN;
+      }
+
+      if (this->direction_h == DIR_RIGHT){
+        this->direction_h = DIR_LEFT;
+      }else {
+        this->direction_h = DIR_RIGHT;
+      }
+    }
+
+    void reflect_h(){
+      if (this->direction_h == DIR_RIGHT){
+        this->direction_h = DIR_LEFT;
+      }else {
+        this->direction_h = DIR_RIGHT;
+      }
+    }
+
+    void reflect_v(){
+      if (this->direction_v == DIR_DOWN){
+        this->direction_v = DIR_UP;
+      }else {
+        this->direction_v = DIR_DOWN;
+      }
     }
 
     bool colides(Pad pad){
@@ -200,8 +257,8 @@ class Ball: public Pixel {
 TimedExecution speed = TimedExecution(100);
 TimedExecution ball_speed = TimedExecution(50);
 
-Ball ball = Ball(&ball_speed, &display, (uint16_t) 30, (uint16_t) 30);
-Pad player1 = Pad(&display, 0, 10);
+Ball ball = Ball(&ball_speed, &display, (uint16_t) 10, (uint16_t) 40);
+Pad player1 = Pad(&display, 0, 26);
 
 void setup()
 {
