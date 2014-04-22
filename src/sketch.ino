@@ -81,7 +81,7 @@ class Pixel {
       this->draw(WHITE);
       this->x = x;
       this->y = y;
-      this->display->drawPixel(this->x, this->y, BLACK);
+      this->draw(BLACK);
     }
 
     void move_right(){
@@ -103,22 +103,41 @@ class Pixel {
 };
 
 
+#define DIR_UP  1
+#define DIR_DOWN 2
+#define DIR_RIGHT 3
+#define DIR_LEFT 4
+
 class Ball: public Pixel {
 
   private:
-    uint16_t direction;
+    TimedExecution *speed;
+    uint16_t direction_h;
+    uint16_t direction_v;
 
   public:
 
-  Ball (TimedExecution *speed, Adafruit_PCD8544 *display, uint16_t x, uint16_t y):
-        Pixel(display, x, y){
-      this->direction = 0;
+    Ball (TimedExecution *speed, Adafruit_PCD8544 *display, uint16_t x, uint16_t y): Pixel(display, x, y){
+      this->speed = speed;
+      this->direction_h = DIR_LEFT;
+      this->direction_v = DIR_UP;
     }
 
     void move(){
-    
-    }
+      if (this->speed->expired()){
+        if (this->direction_v == DIR_UP){
+          this->move_up();
+        }else {
+          this->move_down();
+        }
 
+        if (this->direction_h == DIR_LEFT){
+          this->move_left();
+        }else {
+          this->move_right();
+        }
+      }
+    }
 };
 
 class Pad {
@@ -158,7 +177,7 @@ class Pad {
 };
 
 
-TimedExecution speed = TimedExecution(100);
+TimedExecution speed = TimedExecution(200);
 TimedExecution ball_speed = TimedExecution(50);
 
 Ball ball = Ball(&ball_speed, &display, (uint16_t) 30, (uint16_t) 30);
@@ -197,10 +216,9 @@ void loop()
       player1.move_up();
       player1.draw();
     }
-
-
-
-    display.display();
   }
+
+  ball.move();
+  display.display();
 
 }
