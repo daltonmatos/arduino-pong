@@ -300,7 +300,12 @@ void loop()
 
   if (ball.colides(player1)){
     Serial.println("Colides!");
-    ball.reflect();
+    ball.reflect_h();
+    /*speed.set_delay(speed.get_delay()-5);
+    ball_speed.set_delay(ball_speed.get_delay()-5);
+    speed.reset();
+    ball_speed.reset();
+    */
   }
 
   display.display();
