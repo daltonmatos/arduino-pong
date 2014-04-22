@@ -213,18 +213,9 @@ class Ball: public Pixel {
       }
     }
 
-    void reflect(){
-      if (this->direction_v == DIR_DOWN){
-        this->direction_v = DIR_UP;
-      }else {
-        this->direction_v = DIR_DOWN;
-      }
-
-      if (this->direction_h == DIR_RIGHT){
-        this->direction_h = DIR_LEFT;
-      }else {
-        this->direction_h = DIR_RIGHT;
-      }
+    bool is_out(){
+      Serial.println(this->x);
+      return (int)this->x < (int)0;
     }
 
     void reflect_h(){
@@ -307,6 +298,19 @@ void loop()
     ball_speed.reset();
     */
   }
+
+  if (ball.is_out()){
+    display.setCursor(10, 20);
+    display.println("GAME OVER");
+    display.display();
+    ball.x = 60;
+    ball.y = 20;
+    delay(1500);
+    display.clearDisplay();
+    player1.draw();
+    ball.draw();
+  }
+
 
   display.display();
 }
