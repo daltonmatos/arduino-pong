@@ -343,7 +343,6 @@ void loop()
     player2.process_input();
   }
 
-
   ball.move();
   display.display();
 
@@ -361,7 +360,6 @@ void loop()
       placar.score_left();
     }
 
-
     display.setCursor(10, 20);
     display.setTextColor(BLACK);
     display.display();
@@ -374,7 +372,6 @@ void loop()
     ball.draw();
     placar.draw();
   }
-
 
   display.display();
 }
