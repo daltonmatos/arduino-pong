@@ -1,7 +1,7 @@
 #include <avr/pgmspace.h>
 #include <Adafruit_GFX.h>
 #include <Adafruit_PCD8544.h>
-
+#include <math.h>
 
 Adafruit_PCD8544 display = Adafruit_PCD8544(8, 7, 5, 4, 3);
 
@@ -11,6 +11,10 @@ Adafruit_PCD8544 display = Adafruit_PCD8544(8, 7, 5, 4, 3);
 
 #define BANNER_HEIGHT 9
 
+
+int number_of_digits(uint16_t n){
+  return n > 0 ? (int) log10 ((double) n) + 1 : 1;
+}
 
 class TimedExecution {
 
@@ -271,7 +275,7 @@ class Placar{
       this->display->setCursor(1, 1);
       this->display->print(this->_score_left);
       
-      this->display->setCursor((this->display->width() - 6), 1);
+      this->display->setCursor(this->display->width() - (6 * number_of_digits(this->_score_right)), 1);
       this->display->print(this->_score_right);
     }
 
@@ -293,8 +297,10 @@ class Placar{
       this->display->setCursor(10, 20);
       this->display->print(this->_score_left);
 
-      this->display->setCursor(60, 20);
+      this->display->setCursor(this->display->width() - (12 * number_of_digits(this->_score_right)) - 10, 20);
       this->display->print(this->_score_right);
+
+      this->display->fillRect(41, 11, 2, this->display->height() - 2, BLACK);
     }
 
 };
@@ -358,11 +364,10 @@ void loop()
 
     display.setCursor(10, 20);
     display.setTextColor(BLACK);
-    //display.println("GAME OVER");
     display.display();
     ball.x = 60;
     ball.y = 20;
-    delay(1500);
+    delay(10500);
     display.clearDisplay();
     player1.draw();
     player2.draw();
