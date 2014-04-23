@@ -307,7 +307,7 @@ class Placar{
 
 
 TimedExecution pad_speed = TimedExecution(100);
-TimedExecution ball_speed = TimedExecution(40);
+TimedExecution ball_speed = TimedExecution(30);
 
 Placar placar = Placar(&display);
 Ball ball = Ball(&ball_speed, &display, (uint16_t) 24, (uint16_t) 42);
@@ -365,7 +365,7 @@ void loop()
     display.display();
     ball.x = 60;
     ball.y = 20;
-    delay(10500);
+    delay(1500);
     display.clearDisplay();
     player1.draw();
     player2.draw();
