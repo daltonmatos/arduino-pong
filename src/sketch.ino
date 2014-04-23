@@ -9,6 +9,7 @@ Adafruit_PCD8544 display = Adafruit_PCD8544(8, 7, 5, 4, 3);
 #define AXIS_X A1
 #define BUTTON A2
 
+#define BANNER_HEIGHT 9
 
 
 class TimedExecution {
@@ -69,7 +70,7 @@ class Pad {
       this->pin_y= pin_y;
     }
     void move_up(){
-      if (this->y - this->step >= 0){
+      if (this->y - this->step >= BANNER_HEIGHT){
         this->display->drawLine(this->x, this->y, this->x, this->y+this->size, WHITE);
         this->y-=step;
         this->draw();
@@ -198,7 +199,7 @@ class Ball: public Pixel {
         }
 
         /* Bottom/Up Limit */
-        if (this->y+1 == this->display->height() || this->y-1 == 10 ){
+        if (this->y+1 == this->display->height() || this->y-1 == BANNER_HEIGHT ){
           this->reflect_up_down();
           return;
         }
@@ -206,10 +207,16 @@ class Ball: public Pixel {
       }
     }
 
-    bool is_out(){
+    int is_out(){
       int left_out = (int)this->x < (int)-1;
       int right_out = (int)this->x > this->display->width();
-      return left_out || right_out;
+      if (left_out){
+        return -1;
+      }
+      if (right_out){
+        return 1;
+      }
+      return 0;
     }
 
     void reflect_left_right(){
@@ -242,14 +249,15 @@ class Ball: public Pixel {
 
 class Placar{
 
+  private:
+    uint16_t _score_left, _score_right;
   public:
     Adafruit_PCD8544 *display;
-    uint16_t score_left, score_right;
 
     Placar(Adafruit_PCD8544 *display){
         this->display = display;
-        this->score_right = 0;
-        this->score_left = 0;
+        this->_score_right = 0;
+        this->_score_left = 0;
     }
 
 
@@ -261,12 +269,21 @@ class Placar{
       this->display->print("PONG");
 
       this->display->setCursor(1, 1);
-      this->display->print(this->score_left);
+      this->display->print(this->_score_left);
       
       this->display->setCursor((this->display->width() - 6), 1);
-      this->display->print(this->score_right);
+      this->display->print(this->_score_right);
     }
 
+    void score_left(){
+      this->_score_left++;
+      this->draw();
+    }
+
+    void score_right(){
+      this->_score_right++;
+      this->draw();
+    }
 };
 
 
@@ -297,11 +314,15 @@ void setup()
 
   display.display();
   speed.reset();
+  delay(2000);
 }
 
 void loop()
 {
   
+
+
+
   if (speed.expired()){
     player1.process_input();
     player2.process_input();
@@ -316,8 +337,18 @@ void loop()
     ball.move();
   }
 
-  if (ball.is_out()){
+  int is_out = ball.is_out();
+  if (is_out){
+
+    if (is_out < 0){
+      placar.score_right();
+    }else {
+      placar.score_left();
+    }
+
+
     display.setCursor(10, 20);
+    display.setTextColor(BLACK);
     display.println("GAME OVER");
     display.display();
     ball.x = 60;
