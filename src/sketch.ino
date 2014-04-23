@@ -179,46 +179,22 @@ class Ball: public Pixel {
           this->move_right();
         }
 
-        /* Bottom Limit */
-        if (this->y+1 == 48 && this->direction_h == DIR_RIGHT && this->direction_v == DIR_DOWN){
-          this->direction_v = DIR_UP;
+        /* Bottom/Up Limit */
+        if (this->y+1 == this->display->height() || this->y-1 == 0 ){
+          this->reflect_up_down();
           return;
         }
         
-        /* Bottom Limit */
-        if (this->y+1 == 48 && this->direction_h == DIR_LEFT && this->direction_v == DIR_DOWN){
-          this->direction_v = DIR_UP;
-          return;
-        }
-        
-        /* Left Limit */
-        if (this->y-1 == 0){ // && this->direction_h == DIR_RIGHT && this->direction_v == DIR_UP){
-          //Serial.println("Up Limit");
-          //this->direction_v = DIR_DOWN;
-          this->reflect_v();
-          return;
-        }
-
-        /* Right Limit */
-        if (this->x+1 == 84 && this->direction_h == DIR_RIGHT && this->direction_v == DIR_UP){
-          this->direction_h = DIR_LEFT;
-          return;
-        }
-        
-        if (this->x+1 == 84 && this->direction_h == DIR_RIGHT && this->direction_v == DIR_DOWN){
-          this->direction_h = DIR_LEFT;
-          return;
-        }
-
       }
     }
 
     bool is_out(){
-      Serial.println(this->x);
-      return (int)this->x < (int)0;
+      int left_out = (int)this->x < (int)-1;
+      int right_out = (int)this->x > this->display->width();
+      return left_out || right_out;
     }
 
-    void reflect_h(){
+    void reflect_left_right(){
       if (this->direction_h == DIR_RIGHT){
         this->direction_h = DIR_LEFT;
       }else {
@@ -226,7 +202,7 @@ class Ball: public Pixel {
       }
     }
 
-    void reflect_v(){
+    void reflect_up_down(){
       if (this->direction_v == DIR_DOWN){
         this->direction_v = DIR_UP;
       }else {
@@ -291,7 +267,7 @@ void loop()
 
   if (ball.colides(player1)){
     Serial.println("Colides!");
-    ball.reflect_h();
+    ball.reflect_left_right();
     /*speed.set_delay(speed.get_delay()-5);
     ball_speed.set_delay(ball_speed.get_delay()-5);
     speed.reset();
