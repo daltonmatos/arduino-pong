@@ -226,6 +226,7 @@ TimedExecution ball_speed = TimedExecution(50);
 
 Ball ball = Ball(&ball_speed, &display, (uint16_t) 10, (uint16_t) 40);
 Pad player1 = Pad(&display, 0, 26);
+Pad player2 = Pad(&display, display.width()-1, 26);
 
 void setup()
 {
@@ -237,7 +238,9 @@ void setup()
   pinMode(A0, INPUT);
   pinMode(A1, INPUT);
   pinMode(A2, INPUT);
+
   player1.draw();
+  player2.draw();
   ball.draw();
   display.display();
   speed.reset();
@@ -265,14 +268,9 @@ void loop()
   ball.move();
   display.display();
 
-  if (ball.colides(player1)){
+  if (ball.colides(player1) || ball.colides(player2)){
     Serial.println("Colides!");
     ball.reflect_left_right();
-    /*speed.set_delay(speed.get_delay()-5);
-    ball_speed.set_delay(ball_speed.get_delay()-5);
-    speed.reset();
-    ball_speed.reset();
-    */
   }
 
   if (ball.is_out()){
@@ -284,6 +282,7 @@ void loop()
     delay(1500);
     display.clearDisplay();
     player1.draw();
+    player2.draw();
     ball.draw();
   }
 
