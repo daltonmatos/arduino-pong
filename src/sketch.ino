@@ -198,7 +198,7 @@ class Ball: public Pixel {
         }
 
         /* Bottom/Up Limit */
-        if (this->y+1 == this->display->height() || this->y-1 == 0 ){
+        if (this->y+1 == this->display->height() || this->y-1 == 10 ){
           this->reflect_up_down();
           return;
         }
@@ -229,25 +229,51 @@ class Ball: public Pixel {
     }
 
     bool colides(Pad pad){
-      //if ((this->x-1 == pad.x && this->direction_h == DIR_LEFT) && (this->y >= pad.y && this->y <= (pad.y + pad.size)) ){
       if (
           ((this->x-1 == pad.x && this->direction_h == DIR_LEFT)  
           || (this->x+2 == pad.x && this->direction_h == DIR_RIGHT)) 
           && (this->y >= pad.y && this->y <= (pad.y + pad.size)) ){
 
-//      if ((this->x == pad.x) && (this->y >= pad.y && this->y <= (pad.y + pad.size))){
         return true;
       }
       return false;
     }
 };
 
+class Placar{
 
+  public:
+    Adafruit_PCD8544 *display;
+    uint16_t score_left, score_right;
+
+    Placar(Adafruit_PCD8544 *display){
+        this->display = display;
+        this->score_right = 0;
+        this->score_left = 0;
+    }
+
+
+    void draw(){
+      this->display->fillRect(0, 0, this->display->width(), 9, BLACK);
+      this->display->setTextSize(1);
+      this->display->setCursor(30, 1);
+      this->display->setTextColor(WHITE);
+      this->display->print("PONG");
+
+      this->display->setCursor(1, 1);
+      this->display->print(this->score_left);
+      
+      this->display->setCursor((this->display->width() - 6), 1);
+      this->display->print(this->score_right);
+    }
+
+};
 
 
 TimedExecution speed = TimedExecution(100);
 TimedExecution ball_speed = TimedExecution(50);
 
+Placar placar = Placar(&display);
 Ball ball = Ball(&ball_speed, &display, (uint16_t) 10, (uint16_t) 40);
 Pad player1 = Pad(&display, 0, 26, AXIS_X, AXIS_Y);
 Pad player2 = Pad(&display, display.width()-1, 26, A4, A3);
@@ -266,6 +292,9 @@ void setup()
   player1.draw();
   player2.draw();
   ball.draw();
+  player2.draw();
+  placar.draw();
+
   display.display();
   speed.reset();
 }
@@ -273,22 +302,9 @@ void setup()
 void loop()
 {
   
-  //uint16_t axis_x = analogRead(AXIS_X);
-  //uint16_t axis_y = analogRead(AXIS_Y);
-
   if (speed.expired()){
     player1.process_input();
     player2.process_input();
-    
-    /*if (axis_y > 600){
-      player1.move_down();
-      player1.draw();
-    }
-
-    if (axis_y < 450){
-      player1.move_up();
-      player1.draw();
-    }*/
   }
 
 
@@ -296,7 +312,6 @@ void loop()
   display.display();
 
   if (ball.colides(player1) || ball.colides(player2)){
-    Serial.println("Colides!");
     ball.reflect_left_right();
     ball.move();
   }
@@ -312,6 +327,7 @@ void loop()
     player1.draw();
     player2.draw();
     ball.draw();
+    placar.draw();
   }
 
 
