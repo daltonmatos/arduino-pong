@@ -58,12 +58,15 @@ class Pad {
     const static int size = 10;
     const static int step = 2;
     Adafruit_PCD8544 *display;
+    int pin_x, pin_y;
 
   public:
-    Pad(Adafruit_PCD8544 *display, uint16_t x, uint16_t y){
+    Pad(Adafruit_PCD8544 *display, uint16_t x, uint16_t y, int pin_x, int pin_y){
       this->x = x;
       this->y = y;
       this->display = display;
+      this->pin_x = pin_x;
+      this->pin_y= pin_y;
     }
     void move_up(){
       if (this->y - this->step >= 0){
@@ -87,6 +90,21 @@ class Pad {
 
     void draw(){
       this->draw(BLACK);
+    }
+
+    void process_input(){
+      uint16_t axis_x = analogRead(this->pin_x);
+      uint16_t axis_y = analogRead(this->pin_y);
+
+      if (axis_y > 600){
+        this->move_down();
+        this->draw();
+      }
+
+      if (axis_y < 450){
+        this->move_up();
+        this->draw();
+      }
     }
 
 };
@@ -211,7 +229,13 @@ class Ball: public Pixel {
     }
 
     bool colides(Pad pad){
-      if ((this->x-1 == pad.x && this->direction_h == DIR_LEFT) && (this->y >= pad.y && this->y <= (pad.y + pad.size)) ){
+      //if ((this->x-1 == pad.x && this->direction_h == DIR_LEFT) && (this->y >= pad.y && this->y <= (pad.y + pad.size)) ){
+      if (
+          ((this->x-1 == pad.x && this->direction_h == DIR_LEFT)  
+          || (this->x+2 == pad.x && this->direction_h == DIR_RIGHT)) 
+          && (this->y >= pad.y && this->y <= (pad.y + pad.size)) ){
+
+//      if ((this->x == pad.x) && (this->y >= pad.y && this->y <= (pad.y + pad.size))){
         return true;
       }
       return false;
@@ -225,8 +249,8 @@ TimedExecution speed = TimedExecution(100);
 TimedExecution ball_speed = TimedExecution(50);
 
 Ball ball = Ball(&ball_speed, &display, (uint16_t) 10, (uint16_t) 40);
-Pad player1 = Pad(&display, 0, 26);
-Pad player2 = Pad(&display, display.width()-1, 26);
+Pad player1 = Pad(&display, 0, 26, AXIS_X, AXIS_Y);
+Pad player2 = Pad(&display, display.width()-1, 26, A4, A3);
 
 void setup()
 {
@@ -249,12 +273,14 @@ void setup()
 void loop()
 {
   
-  uint16_t axis_x = analogRead(AXIS_X);
-  uint16_t axis_y = analogRead(AXIS_Y);
-  uint16_t button = analogRead(BUTTON);
+  //uint16_t axis_x = analogRead(AXIS_X);
+  //uint16_t axis_y = analogRead(AXIS_Y);
 
   if (speed.expired()){
-    if (axis_y > 600){
+    player1.process_input();
+    player2.process_input();
+    
+    /*if (axis_y > 600){
       player1.move_down();
       player1.draw();
     }
@@ -262,8 +288,9 @@ void loop()
     if (axis_y < 450){
       player1.move_up();
       player1.draw();
-    }
+    }*/
   }
+
 
   ball.move();
   display.display();
@@ -271,6 +298,7 @@ void loop()
   if (ball.colides(player1) || ball.colides(player2)){
     Serial.println("Colides!");
     ball.reflect_left_right();
+    ball.move();
   }
 
   if (ball.is_out()){
