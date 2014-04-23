@@ -277,21 +277,34 @@ class Placar{
 
     void score_left(){
       this->_score_left++;
+      this->show_score();
       this->draw();
     }
 
     void score_right(){
       this->_score_right++;
+      this->show_score();
       this->draw();
     }
+
+    void show_score(){
+      this->display->setTextSize(2);
+      this->display->setTextColor(BLACK);
+      this->display->setCursor(10, 20);
+      this->display->print(this->_score_left);
+
+      this->display->setCursor(60, 20);
+      this->display->print(this->_score_right);
+    }
+
 };
 
 
-TimedExecution speed = TimedExecution(100);
-TimedExecution ball_speed = TimedExecution(50);
+TimedExecution pad_speed = TimedExecution(100);
+TimedExecution ball_speed = TimedExecution(40);
 
 Placar placar = Placar(&display);
-Ball ball = Ball(&ball_speed, &display, (uint16_t) 10, (uint16_t) 40);
+Ball ball = Ball(&ball_speed, &display, (uint16_t) 24, (uint16_t) 42);
 Pad player1 = Pad(&display, 0, 26, AXIS_X, AXIS_Y);
 Pad player2 = Pad(&display, display.width()-1, 26, A4, A3);
 
@@ -313,17 +326,13 @@ void setup()
   placar.draw();
 
   display.display();
-  speed.reset();
   delay(2000);
 }
 
 void loop()
 {
-  
 
-
-
-  if (speed.expired()){
+  if (pad_speed.expired()){
     player1.process_input();
     player2.process_input();
   }
@@ -349,7 +358,7 @@ void loop()
 
     display.setCursor(10, 20);
     display.setTextColor(BLACK);
-    display.println("GAME OVER");
+    //display.println("GAME OVER");
     display.display();
     ball.x = 60;
     ball.y = 20;
