@@ -344,7 +344,6 @@ void loop()
   }
 
   ball.move();
-  display.display();
 
   if (ball.colides(player1) || ball.colides(player2)){
     ball.reflect_left_right();
@@ -360,12 +359,11 @@ void loop()
       placar.score_left();
     }
 
-    display.setCursor(10, 20);
-    display.setTextColor(BLACK);
-    display.display();
-    ball.x = 60;
-    ball.y = 20;
+    display.display();  /* Mostra o placar grande */
+    ball.x = 42;
+    ball.y = 24;
     delay(1500);
+
     display.clearDisplay();
     player1.draw();
     player2.draw();
