@@ -294,7 +294,7 @@ class Placar{
     void show_score(){
       this->display->setTextSize(2);
       this->display->setTextColor(BLACK);
-      this->display->setCursor(10, 20);
+      this->display->setCursor(5, 20);
       this->display->print(this->_score_left);
 
       this->display->setCursor(this->display->width() - (12 * number_of_digits(this->_score_right)) - 10, 20);
