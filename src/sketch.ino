@@ -310,7 +310,7 @@ TimedExecution pad_speed = TimedExecution(100);
 TimedExecution ball_speed = TimedExecution(30);
 
 Placar placar = Placar(&display);
-Ball ball = Ball(&ball_speed, &display, (uint16_t) 24, (uint16_t) 42);
+Ball ball = Ball(&ball_speed, &display, (uint16_t) 42, (uint16_t) 24);
 Pad player1 = Pad(&display, 0, 26, AXIS_X, AXIS_Y);
 Pad player2 = Pad(&display, display.width()-1, 26, A4, A3);
 
