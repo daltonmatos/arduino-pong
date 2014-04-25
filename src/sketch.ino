@@ -3,7 +3,7 @@
 #include <Adafruit_PCD8544.h>
 #include <math.h>
 
-Adafruit_PCD8544 display = Adafruit_PCD8544(8, 7, 5, 4, 3);
+Adafruit_PCD8544 display = Adafruit_PCD8544(3, 4, 5, 7, 8);
 
 #define AXIS_Y A0
 #define AXIS_X A1
@@ -64,15 +64,19 @@ class Pad {
     const static int step = 2;
     Adafruit_PCD8544 *display;
     int pin_x, pin_y;
+    uint16_t min, max;
 
   public:
-    Pad(Adafruit_PCD8544 *display, uint16_t x, uint16_t y, int pin_x, int pin_y){
+    Pad(Adafruit_PCD8544 *display, uint16_t x, uint16_t y, int pin_x, int pin_y, uint16_t min, uint16_t max){
       this->x = x;
       this->y = y;
       this->display = display;
       this->pin_x = pin_x;
       this->pin_y= pin_y;
+      this->min = min;
+      this->max = max;
     }
+
     void move_up(){
       if (this->y - this->step >= BANNER_HEIGHT){
         this->display->drawLine(this->x, this->y, this->x, this->y+this->size, WHITE);
@@ -98,15 +102,15 @@ class Pad {
     }
 
     void process_input(){
-      uint16_t axis_x = analogRead(this->pin_x);
       uint16_t axis_y = analogRead(this->pin_y);
+      uint16_t middle = (max - min) / 2;
 
-      if (axis_y > 600){
+      if (axis_y > middle + 50){
         this->move_down();
         this->draw();
       }
 
-      if (axis_y < 450){
+      if (axis_y < middle - 50){
         this->move_up();
         this->draw();
       }
@@ -292,15 +296,19 @@ class Placar{
     }
 
     void show_score(){
-      this->display->setTextSize(2);
       this->display->setTextColor(BLACK);
+
+      this->display->setTextSize(1);
+      this->display->setCursor(15, 10);
+      this->display->print("GOOOOL!!!");
+
+      this->display->setTextSize(2);
       this->display->setCursor(5, 20);
       this->display->print(this->_score_left);
 
       this->display->setCursor(this->display->width() - (12 * number_of_digits(this->_score_right)) - 10, 20);
       this->display->print(this->_score_right);
 
-      this->display->fillRect(41, 11, 2, this->display->height() - 2, BLACK);
     }
 
 };
@@ -311,8 +319,8 @@ TimedExecution ball_speed = TimedExecution(30);
 
 Placar placar = Placar(&display);
 Ball ball = Ball(&ball_speed, &display, (uint16_t) 42, (uint16_t) 24);
-Pad player1 = Pad(&display, 0, 26, AXIS_X, AXIS_Y);
-Pad player2 = Pad(&display, display.width()-1, 26, A4, A3);
+Pad player1 = Pad(&display, 0, 26, AXIS_X, AXIS_Y, 10, 731); /* Potenciomentro em 3V */
+Pad player2 = Pad(&display, display.width()-1, 26, A6, A5, 0, 1024); /* Potenciomentro em 5V */
 
 void setup()
 {
