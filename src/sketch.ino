@@ -14,7 +14,7 @@ Adafruit_PCD8544 display = Adafruit_PCD8544(3, 4, 5, 7, 8);
 
 
 SoftwareSerial bt_player1(A1, A2); // RX, TX
-//SoftwareSerial bt_player2(A4, A5); // RX, TX
+SoftwareSerial bt_player2(A4, A5); // RX, TX
 
 
 #define DIRECTIONAL_P1 49
@@ -133,6 +133,8 @@ class Pad {
     }
 
     void process_input_player(SoftwareSerial *serial_line){
+
+      serial_line->listen();
 
       if (serial_line->available()){
         data[0] = serial_line->read();
@@ -362,7 +364,7 @@ Pad player2 = Pad(&display, display.width()-1, 26, A6, A5, 0, 1024); /* Potencio
 void setup()
 {
   bt_player1.begin(9600);
-  //bt_player2.begin(9600);
+  bt_player2.begin(9600);
   Serial.begin(9600);
   display.begin();
   display.clearDisplay();
