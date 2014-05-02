@@ -1,6 +1,7 @@
 #include <avr/pgmspace.h>
 #include <Adafruit_GFX.h>
 #include <Adafruit_PCD8544.h>
+#include <SoftwareSerial.h>
 #include <math.h>
 
 Adafruit_PCD8544 display = Adafruit_PCD8544(3, 4, 5, 7, 8);
@@ -10,6 +11,18 @@ Adafruit_PCD8544 display = Adafruit_PCD8544(3, 4, 5, 7, 8);
 #define BUTTON A2
 
 #define BANNER_HEIGHT 9
+
+
+SoftwareSerial bt(A2, A1); // RX, TX
+
+#define DIRECTIONAL_P1 49
+#define BUTTON_P1 54
+
+#define DIRECTIONAL_P2 50
+#define BUTTON_P2 56
+
+#define KEYDOWN 68
+#define KEYUP 85
 
 
 int number_of_digits(uint16_t n){
@@ -65,6 +78,7 @@ class Pad {
     Adafruit_PCD8544 *display;
     int pin_x, pin_y;
     uint16_t min, max;
+    int data[3];
 
   public:
     Pad(Adafruit_PCD8544 *display, uint16_t x, uint16_t y, int pin_x, int pin_y, uint16_t min, uint16_t max){
@@ -114,6 +128,20 @@ class Pad {
         this->move_up();
         this->draw();
       }
+    }
+
+    void process_input_player(int *data){
+
+      //Serial.println(data[1]);
+      if ((data[0] == DIRECTIONAL_P2) && (data[1] == 66) && (data[2] == KEYDOWN)){
+        this->move_up();
+      }
+
+      if ((data[0] == DIRECTIONAL_P2) && (data[1] == 67) && (data[2] == KEYDOWN)){
+        this->move_down();
+      }
+
+      this->draw();
     }
 
 };
@@ -211,7 +239,7 @@ class Ball: public Pixel {
           this->reflect_up_down();
           return;
         }
-        
+
       }
     }
 
@@ -281,6 +309,7 @@ class Placar{
       
       this->display->setCursor(this->display->width() - (6 * number_of_digits(this->_score_right)), 1);
       this->display->print(this->_score_right);
+
     }
 
     void score_left(){
@@ -324,6 +353,7 @@ Pad player2 = Pad(&display, display.width()-1, 26, A6, A5, 0, 1024); /* Potencio
 
 void setup()
 {
+  bt.begin(9600);
   Serial.begin(9600);
   display.begin();
   display.clearDisplay();
@@ -343,12 +373,23 @@ void setup()
   delay(2000);
 }
 
+int data[3];
+
 void loop()
 {
 
+
   if (pad_speed.expired()){
-    player1.process_input();
-    player2.process_input();
+      if (bt.available()){
+        data[0] = bt.read();
+        data[1] = bt.read();
+        data[2] = bt.read();
+      }
+
+    player1.process_input_player(data);
+    player2.process_input_player(data);
+    //player1.process_input();
+    //player2.process_input();
   }
 
   ball.move();
