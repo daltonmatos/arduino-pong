@@ -143,11 +143,11 @@ class Pad {
       }
 
       //Serial.println(data[1]);
-      if ((data[0] == DIRECTIONAL_P2) && (data[1] == 66) && (data[2] == KEYDOWN)){
+      if ((data[0] == DIRECTIONAL_P1) && (data[1] == 51) && (data[2] == KEYDOWN)){
         this->move_up();
       }
 
-      if ((data[0] == DIRECTIONAL_P2) && (data[1] == 67) && (data[2] == KEYDOWN)){
+      if ((data[0] == DIRECTIONAL_P1) && (data[1] == 52) && (data[2] == KEYDOWN)){
         this->move_down();
       }
 
@@ -386,7 +386,7 @@ void loop()
 
   if (pad_speed.expired()){
     player1.process_input_player(&bt_player1);
-    //player2.process_input_player(bt_player2);
+    player2.process_input_player(&bt_player2);
     //player1.process_input();
     //player2.process_input();
   }
