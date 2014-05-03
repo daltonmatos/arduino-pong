@@ -442,6 +442,7 @@ void setup()
 Pong pong(&display);
 
 bool show_splash = true;
+
 void loop()
 {
   while (show_splash){
@@ -449,9 +450,16 @@ void loop()
     player2.process_input_player();
     pong.splash(player1.start_pressed, player2.start_pressed);
     display.display();
+
     if (player1.start_pressed && player2.start_pressed){
       display.clearDisplay();
       show_splash = false;
+      ball.draw();
+      placar.draw();
+      player1.draw();
+      player2.draw();
+      display.display();
+      delay(3000);
       break;
     }
   }
