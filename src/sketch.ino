@@ -513,7 +513,6 @@ void loop()
     player1.start_pressed = false;
     while (!player1.start_pressed){
       player1.process_input_player();
-      Serial.println(player1.start_pressed);
     }
     placar.reset();
     display.clearDisplay();
