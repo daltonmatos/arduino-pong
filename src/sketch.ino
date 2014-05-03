@@ -74,8 +74,11 @@ class Pong{
 
   private:
     Adafruit_PCD8544 *display;
+    TimedExecution blink_on;
+    bool color;
 
-    void print_pushstart(int x, int y){
+    void print_pushstart(int x, int y, int color){
+      this->display->setTextColor(color);
       this->display->setTextSize(1);
       this->display->setCursor(x, y);
       this->display->println("PUSH");
@@ -87,6 +90,9 @@ class Pong{
   public:
     Pong(Adafruit_PCD8544 *display){
       this->display = display;
+      this->blink_on.set_delay(500);
+      this->blink_on.reset();
+      this->color = true;
     }
 
   void splash(){
@@ -95,8 +101,16 @@ class Pong{
     this->display->setTextSize(2);
     this->display->println("PONG");
 
-    this->print_pushstart(5, 30);
-    this->print_pushstart(55, 30);
+    if (this->blink_on.expired()){
+      if (this->color){
+        this->print_pushstart(5, 30, BLACK);
+        this->print_pushstart(55, 30, BLACK);
+      }else {
+        this->print_pushstart(5, 30, WHITE);
+        this->print_pushstart(55, 30, WHITE);
+      }
+      this->color = !this->color;
+    }
   }
 };
 
