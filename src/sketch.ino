@@ -130,13 +130,25 @@ class Pad {
     uint16_t min, max;
     int data[3];
     bool start_pressed;
+    HardwareSerial *hw_serial;
+    SoftwareSerial *sw_serial;
 
-  public:
-    Pad(Adafruit_PCD8544 *display, uint16_t x, uint16_t y){
+    
+    void init_values(Adafruit_PCD8544 *display, uint16_t x, uint16_t y){
       this->x = x;
       this->y = y;
       this->display = display;
       this->start_pressed = false;
+    }
+
+    Pad(Adafruit_PCD8544 *display, uint16_t x, uint16_t y, SoftwareSerial *serial_line){
+      this->init_values(display, x, y);
+      this->sw_serial = serial_line;
+    }
+
+    Pad(Adafruit_PCD8544 *display, uint16_t x, uint16_t y, HardwareSerial *serial_line){
+      this->init_values(display, x, y);
+      this->hw_serial = serial_line;
     }
 
     void move_up(){
@@ -179,23 +191,22 @@ class Pad {
       this->draw();
     }
 
-    void process_input_player(SoftwareSerial *serial_line){
+    void process_input_player(){
 
-      if (serial_line->available()){
-        data[0] = serial_line->read();
-        data[1] = serial_line->read();
-        data[2] = serial_line->read();
+      if (sw_serial){
+        if (sw_serial->available()){
+          data[0] = sw_serial->read();
+          data[1] = sw_serial->read();
+          data[2] = sw_serial->read();
+        }
       }
 
-      this->process_data(data);
-    }
-    
-    void process_input_player(HardwareSerial *serial_line){
-
-      if (serial_line->available()){
-        data[0] = serial_line->read();
-        data[1] = serial_line->read();
-        data[2] = serial_line->read();
+      if (hw_serial){
+        if (hw_serial->available()){
+          data[0] = hw_serial->read();
+          data[1] = hw_serial->read();
+          data[2] = hw_serial->read();
+        }
       }
 
       this->process_data(data);
@@ -405,8 +416,8 @@ TimedExecution ball_speed = TimedExecution(30);
 
 Placar placar = Placar(&display);
 Ball ball = Ball(&ball_speed, &display, (uint16_t) 42, (uint16_t) 24);
-Pad player1 = Pad(&display, 0, 26);
-Pad player2 = Pad(&display, display.width()-1, 26);
+Pad player1 = Pad(&display, 0, 26, &Serial);
+Pad player2 = Pad(&display, display.width()-1, 26, &bt_player2);
 
 void setup()
 {
@@ -434,8 +445,8 @@ bool show_splash = true;
 void loop()
 {
   while (show_splash){
-    player1.process_input_player(&Serial);
-    player2.process_input_player(&bt_player2);
+    player1.process_input_player();
+    player2.process_input_player();
     pong.splash(player1.start_pressed, player2.start_pressed);
     display.display();
     if (player1.start_pressed && player2.start_pressed){
@@ -446,8 +457,8 @@ void loop()
   }
     
   if (pad_speed.expired()){
-    player1.process_input_player(&Serial);
-    player2.process_input_player(&bt_player2);
+    player1.process_input_player();
+    player2.process_input_player();
   }
 
   placar.draw();
