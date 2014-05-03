@@ -482,6 +482,7 @@ void loop()
     ball.move();
   }
 
+  // Player marcou ponto
   int is_out = ball.is_out();
   if (is_out){
 
@@ -497,13 +498,9 @@ void loop()
     delay(1500);
 
     display.clearDisplay();
-    player1.draw();
-    player2.draw();
-    ball.draw();
-    placar.draw();
   }
 
-  // Fim de Jogo
+  // Fim de Jogo, player ganhou.
   if (placar._score_left >= 5 || placar._score_right >= 5){
     placar.show_score(false);
     display.setTextSize(1);
@@ -513,6 +510,7 @@ void loop()
     player1.start_pressed = false;
     while (!player1.start_pressed){
       player1.process_input_player();
+      delay(100);
     }
     placar.reset();
     display.clearDisplay();
