@@ -70,6 +70,37 @@ class TimedExecution {
 
 
 
+class Pong{
+
+  private:
+    Adafruit_PCD8544 *display;
+
+    void print_pushstart(int x, int y){
+      this->display->setTextSize(1);
+      this->display->setCursor(x, y);
+      this->display->println("PUSH");
+      this->display->setCursor(x-3, y+8);
+      this->display->println("START");
+    
+    }
+
+  public:
+    Pong(Adafruit_PCD8544 *display){
+      this->display = display;
+    }
+
+  void splash(){
+    this->display->setCursor(20, 0);
+    this->display->setTextColor(BLACK);
+    this->display->setTextSize(2);
+    this->display->println("PONG");
+
+    this->print_pushstart(5, 30);
+    this->print_pushstart(55, 30);
+  }
+};
+
+
 class Pad {
 
   public:
@@ -394,14 +425,22 @@ void setup()
   player2.draw();
   placar.draw();
 
+  display.clearDisplay();
   display.display();
   delay(2000);
 }
 
 
+Pong pong(&display);
+
 void loop()
 {
+  while (true){
+    pong.splash();
+    display.display();    
+  }
 
+    
   if (pad_speed.expired()){
     player1.process_input_player(&Serial);
     player2.process_input_player(&bt_player2);
