@@ -13,7 +13,6 @@ Adafruit_PCD8544 display = Adafruit_PCD8544(3, 4, 5, 7, 8);
 #define BANNER_HEIGHT 9
 
 
-SoftwareSerial bt_player1(A1, A2); // RX, TX
 SoftwareSerial bt_player2(A4, A5); // RX, TX
 
 
@@ -132,17 +131,7 @@ class Pad {
       }
     }
 
-    void process_input_player(SoftwareSerial *serial_line){
-
-      serial_line->listen();
-
-      if (serial_line->available()){
-        data[0] = serial_line->read();
-        data[1] = serial_line->read();
-        data[2] = serial_line->read();
-      }
-
-      //Serial.println(data[1]);
+    void process_data(int *data){
       if ((data[0] == DIRECTIONAL_P1) && (data[1] == 51) && (data[2] == KEYDOWN)){
         this->move_up();
       }
@@ -153,6 +142,36 @@ class Pad {
 
       this->draw();
     }
+
+    void process_input_player(SoftwareSerial *serial_line){
+
+      //serial_line->listen();
+
+      if (serial_line->available()){
+        data[0] = serial_line->read();
+        data[1] = serial_line->read();
+        data[2] = serial_line->read();
+      }
+
+      //Serial.println(data[1]);
+      this->process_data(data);
+    }
+    
+    void process_input_player(HardwareSerial *serial_line){
+
+      //serial_line->listen();
+
+      if (serial_line->available()){
+        data[0] = serial_line->read();
+        data[1] = serial_line->read();
+        data[2] = serial_line->read();
+      }
+
+      //Serial.println(data[1]);
+      this->process_data(data);
+    }
+
+
 
 };
 
@@ -363,9 +382,8 @@ Pad player2 = Pad(&display, display.width()-1, 26, A6, A5, 0, 1024); /* Potencio
 
 void setup()
 {
-  bt_player1.begin(9600);
-  bt_player2.begin(9600);
   Serial.begin(9600);
+  bt_player2.begin(9600);
   display.begin();
   display.clearDisplay();
   display.display();
@@ -385,7 +403,7 @@ void loop()
 {
 
   if (pad_speed.expired()){
-    player1.process_input_player(&bt_player1);
+    player1.process_input_player(&Serial);
     player2.process_input_player(&bt_player2);
     //player1.process_input();
     //player2.process_input();
