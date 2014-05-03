@@ -353,9 +353,8 @@ class Ball: public Pixel {
 
 class Placar{
 
-  private:
-    uint16_t _score_left, _score_right;
   public:
+    uint16_t _score_left, _score_right;
     Adafruit_PCD8544 *display;
 
     Placar(Adafruit_PCD8544 *display){
@@ -364,6 +363,10 @@ class Placar{
         this->_score_left = 0;
     }
 
+    void reset(){
+      this->_score_left = 0;
+      this->_score_right = 0;
+    }
 
     void draw(){
       this->display->fillRect(0, 0, this->display->width(), 9, BLACK);
@@ -382,22 +385,24 @@ class Placar{
 
     void score_left(){
       this->_score_left++;
-      this->show_score();
+      this->show_score(true);
       this->draw();
     }
 
     void score_right(){
       this->_score_right++;
-      this->show_score();
+      this->show_score(true);
       this->draw();
     }
 
-    void show_score(){
+    void show_score(bool show_goal){
       this->display->setTextColor(BLACK);
 
-      this->display->setTextSize(1);
-      this->display->setCursor(15, 10);
-      this->display->print("GOOOOL!!!");
+      if (show_goal){
+        this->display->setTextSize(1);
+        this->display->setCursor(15, 10);
+        this->display->print("GOOOOL!!!");
+      }
 
       this->display->setTextSize(2);
       this->display->setCursor(5, 20);
@@ -496,6 +501,22 @@ void loop()
     player2.draw();
     ball.draw();
     placar.draw();
+  }
+
+  // Fim de Jogo
+  if (placar._score_left >= 5 || placar._score_right >= 5){
+    placar.show_score(false);
+    display.setTextSize(1);
+    display.setCursor(10, 10);
+    display.print("FIM DE JOGO");
+    display.display();
+    player1.start_pressed = false;
+    while (!player1.start_pressed){
+      player1.process_input_player();
+      Serial.println(player1.start_pressed);
+    }
+    placar.reset();
+    display.clearDisplay();
   }
 
   display.display();
