@@ -84,7 +84,6 @@ class Pong{
       this->display->println("PUSH");
       this->display->setCursor(x-3, y+8);
       this->display->println("START");
-    
     }
 
   public:
@@ -95,7 +94,7 @@ class Pong{
       this->color = true;
     }
 
-  void splash(){
+  void splash(bool p1_entered, bool p2_entered){
     this->display->setCursor(20, 0);
     this->display->setTextColor(BLACK);
     this->display->setTextSize(2);
@@ -103,8 +102,13 @@ class Pong{
 
     if (this->blink_on.expired()){
       if (this->color){
-        this->print_pushstart(5, 30, BLACK);
-        this->print_pushstart(55, 30, BLACK);
+        if (!p1_entered){
+          this->print_pushstart(5, 30, BLACK); // player 1
+        }
+        if (!p2_entered){
+          this->print_pushstart(55, 30, BLACK); // player 2
+        }
+      
       }else {
         this->print_pushstart(5, 30, WHITE);
         this->print_pushstart(55, 30, WHITE);
@@ -125,16 +129,14 @@ class Pad {
     int pin_x, pin_y;
     uint16_t min, max;
     int data[3];
+    bool start_pressed;
 
   public:
-    Pad(Adafruit_PCD8544 *display, uint16_t x, uint16_t y, int pin_x, int pin_y, uint16_t min, uint16_t max){
+    Pad(Adafruit_PCD8544 *display, uint16_t x, uint16_t y){
       this->x = x;
       this->y = y;
       this->display = display;
-      this->pin_x = pin_x;
-      this->pin_y= pin_y;
-      this->min = min;
-      this->max = max;
+      this->start_pressed = false;
     }
 
     void move_up(){
@@ -160,22 +162,7 @@ class Pad {
     void draw(){
       this->draw(BLACK);
     }
-
-    void process_input(){
-      uint16_t axis_y = analogRead(this->pin_y);
-      uint16_t middle = (max - min) / 2;
-
-      if (axis_y > middle + 50){
-        this->move_down();
-        this->draw();
-      }
-
-      if (axis_y < middle - 50){
-        this->move_up();
-        this->draw();
-      }
-    }
-
+    
     void process_data(int *data){
       if ((data[0] == DIRECTIONAL_P1) && (data[1] == 51) && (data[2] == KEYDOWN)){
         this->move_up();
@@ -185,38 +172,34 @@ class Pad {
         this->move_down();
       }
 
+      if (data[0] == BUTTON_P1 && data[1] == 67 && data[2] == KEYDOWN){
+        this->start_pressed = true;
+      }
+
       this->draw();
     }
 
     void process_input_player(SoftwareSerial *serial_line){
 
-      //serial_line->listen();
-
       if (serial_line->available()){
         data[0] = serial_line->read();
         data[1] = serial_line->read();
         data[2] = serial_line->read();
       }
 
-      //Serial.println(data[1]);
       this->process_data(data);
     }
     
     void process_input_player(HardwareSerial *serial_line){
 
-      //serial_line->listen();
-
       if (serial_line->available()){
         data[0] = serial_line->read();
         data[1] = serial_line->read();
         data[2] = serial_line->read();
       }
 
-      //Serial.println(data[1]);
       this->process_data(data);
     }
-
-
 
 };
 
@@ -422,8 +405,8 @@ TimedExecution ball_speed = TimedExecution(30);
 
 Placar placar = Placar(&display);
 Ball ball = Ball(&ball_speed, &display, (uint16_t) 42, (uint16_t) 24);
-Pad player1 = Pad(&display, 0, 26, AXIS_X, AXIS_Y, 10, 731); /* Potenciomentro em 3V */
-Pad player2 = Pad(&display, display.width()-1, 26, A6, A5, 0, 1024); /* Potenciomentro em 5V */
+Pad player1 = Pad(&display, 0, 26);
+Pad player2 = Pad(&display, display.width()-1, 26);
 
 void setup()
 {
@@ -447,21 +430,27 @@ void setup()
 
 Pong pong(&display);
 
+bool show_splash = true;
 void loop()
 {
-  while (true){
-    pong.splash();
-    display.display();    
+  while (show_splash){
+    player1.process_input_player(&Serial);
+    player2.process_input_player(&bt_player2);
+    pong.splash(player1.start_pressed, player2.start_pressed);
+    display.display();
+    if (player1.start_pressed && player2.start_pressed){
+      display.clearDisplay();
+      show_splash = false;
+      break;
+    }
   }
-
     
   if (pad_speed.expired()){
     player1.process_input_player(&Serial);
     player2.process_input_player(&bt_player2);
-    //player1.process_input();
-    //player2.process_input();
   }
 
+  placar.draw();
   ball.move();
 
   if (ball.colides(player1) || ball.colides(player2)){
